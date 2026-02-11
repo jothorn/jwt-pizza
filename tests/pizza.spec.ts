@@ -12,6 +12,13 @@ async function basicInit(page: Page) {
       password: "a",
       roles: [{ role: Role.Diner }],
     },
+    "f@jwt.com": {
+      id: "4",
+      name: "Franchisee",
+      email: "f@jwt.com",
+      password: "a",
+      roles: [{ role: Role.Franchisee }],
+    },
   };
 
   // Authorize login for the given user
@@ -59,7 +66,30 @@ async function basicInit(page: Page) {
     await route.fulfill({ json: menuRes });
   });
 
-  // Standard franchises and stores
+  // User's franchises (GET /api/franchise/:userId) for franchisee dashboard
+  await page.route(/\/api\/franchise\/\d+$/, async (route) => {
+    expect(route.request().method()).toBe("GET");
+    const userId = route.request().url().split("/").pop();
+    if (userId === "4") {
+      await route.fulfill({
+        json: [
+          {
+            id: 2,
+            name: "LotaPizza",
+            stores: [
+              { id: 4, name: "Lehi" },
+              { id: 5, name: "Springville" },
+              { id: 6, name: "American Fork" },
+            ],
+          },
+        ],
+      });
+    } else {
+      await route.fulfill({ json: [] });
+    }
+  });
+
+  // Standard franchises and stores (public list with query params)
   await page.route(/\/api\/franchise(\?.*)?$/, async (route) => {
     const franchiseRes = {
       franchises: [
@@ -136,4 +166,45 @@ test("purchase with login", async ({ page }) => {
 
   // Check balance
   await expect(page.getByText("0.008")).toBeVisible();
+});
+
+test("create store", async ({ page }) => {
+  await basicInit(page);
+
+  // Mock create store API
+  await page.route(/\/api\/franchise\/\d+\/store$/, async (route) => {
+    if (route.request().method() !== "POST") return route.continue();
+    const body = route.request().postDataJSON();
+    await route.fulfill({
+      json: { id: 8, name: body.name, totalRevenue: 0 },
+    });
+  });
+
+  // Login as franchisee
+  await page.getByRole("link", { name: "Login" }).click();
+  await page.getByRole("textbox", { name: "Email address" }).fill("f@jwt.com");
+  await page.getByRole("textbox", { name: "Password" }).fill("a");
+  await page.getByRole("button", { name: "Login" }).click();
+
+  await expect(
+    page.getByRole("link", { name: "F", exact: true }),
+  ).toBeVisible();
+
+  // Go to franchise dashboard (nav link, not footer)
+  await page
+    .getByRole("navigation", { name: "Global" })
+    .getByRole("link", { name: "Franchise" })
+    .click();
+  await expect(page.getByRole("heading", { name: "LotaPizza" })).toBeVisible();
+
+  // Open create store
+  await page.getByRole("button", { name: "Create store" }).click();
+  await expect(page.getByRole("heading", { name: "Create store" })).toBeVisible();
+
+  // Enter store name and submit
+  await page.getByPlaceholder("store name").fill("My New Store");
+  await page.getByRole("button", { name: "Create" }).click();
+
+  // Back on franchise dashboard
+  await expect(page.getByRole("heading", { name: "LotaPizza" })).toBeVisible();
 });
