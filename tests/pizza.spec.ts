@@ -199,11 +199,58 @@ test("create store", async ({ page }) => {
 
   // Open create store
   await page.getByRole("button", { name: "Create store" }).click();
-  await expect(page.getByRole("heading", { name: "Create store" })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Create store" }),
+  ).toBeVisible();
 
   // Enter store name and submit
   await page.getByPlaceholder("store name").fill("My New Store");
   await page.getByRole("button", { name: "Create" }).click();
+
+  // Back on franchise dashboard
+  await expect(page.getByRole("heading", { name: "LotaPizza" })).toBeVisible();
+});
+
+test("close store", async ({ page }) => {
+  await basicInit(page);
+
+  // Mock delete store API
+  await page.route(/\/api\/franchise\/\d+\/store\/\d+$/, async (route) => {
+    if (route.request().method() !== "DELETE") return route.continue();
+    await route.fulfill({ json: { message: "store deleted" } });
+  });
+
+  // Login as franchisee
+  await page.getByRole("link", { name: "Login" }).click();
+  await page.getByRole("textbox", { name: "Email address" }).fill("f@jwt.com");
+  await page.getByRole("textbox", { name: "Password" }).fill("a");
+  await page.getByRole("button", { name: "Login" }).click();
+
+  await expect(
+    page.getByRole("link", { name: "F", exact: true }),
+  ).toBeVisible();
+
+  // Go to franchise dashboard
+  await page
+    .getByRole("navigation", { name: "Global" })
+    .getByRole("link", { name: "Franchise" })
+    .click();
+  await expect(page.getByRole("heading", { name: "LotaPizza" })).toBeVisible();
+
+  // Click Close for the Lehi store row
+  await page
+    .getByRole("row")
+    .filter({ hasText: "Lehi" })
+    .getByRole("button", { name: "Close" })
+    .click();
+
+  // Confirm on close store page
+  await expect(
+    page.getByRole("heading", { name: "Sorry to see you go" }),
+  ).toBeVisible();
+  await expect(page.getByRole("main")).toContainText("LotaPizza");
+  await expect(page.getByRole("main")).toContainText("Lehi");
+  await page.getByRole("button", { name: "Close" }).click();
 
   // Back on franchise dashboard
   await expect(page.getByRole("heading", { name: "LotaPizza" })).toBeVisible();
