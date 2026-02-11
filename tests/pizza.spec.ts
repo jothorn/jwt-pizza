@@ -28,8 +28,12 @@ async function basicInit(page: Page) {
     },
   };
 
-  // Authorize login for the given user
+  // Authorize login (PUT) and logout (DELETE) for the given user
   await page.route("*/**/api/auth", async (route) => {
+    if (route.request().method() === "DELETE") {
+      await route.fulfill({ status: 200 });
+      return;
+    }
     const loginReq = route.request().postDataJSON();
     const user = validUsers[loginReq.email];
     if (!user || user.password !== loginReq.password) {
@@ -416,4 +420,30 @@ test("register", async ({ page }) => {
   await expect(
     page.getByRole("link", { name: "NU", exact: true }),
   ).toBeVisible();
+});
+
+test("logout", async ({ page }) => {
+  await basicInit(page);
+
+  // Login first
+  await page.getByRole("link", { name: "Login" }).click();
+  await page.getByRole("textbox", { name: "Email address" }).fill("d@jwt.com");
+  await page.getByRole("textbox", { name: "Password" }).fill("a");
+  await page.getByRole("button", { name: "Login" }).click();
+
+  await expect(page.getByRole("link", { name: "KC" })).toBeVisible();
+
+  // Click Logout (nav link when logged in)
+  await page
+    .getByRole("navigation", { name: "Global" })
+    .getByRole("link", { name: "Logout" })
+    .click();
+
+  // Logged out: Login link visible, user initial gone
+  await expect(
+    page.getByRole("navigation", { name: "Global" }).getByRole("link", {
+      name: "Login",
+    }),
+  ).toBeVisible();
+  await expect(page.getByRole("link", { name: "KC" })).not.toBeVisible();
 });
