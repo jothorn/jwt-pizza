@@ -378,3 +378,42 @@ test("close franchise", async ({ page }) => {
     page.getByRole("heading", { name: "Mama Ricci's kitchen" }),
   ).toBeVisible();
 });
+
+test("register", async ({ page }) => {
+  await basicInit(page);
+
+  // Mock register (POST /api/auth)
+  await page.route("*/**/api/auth", async (route) => {
+    if (route.request().method() === "POST") {
+      const body = route.request().postDataJSON();
+      const user = {
+        id: "6",
+        name: body.name,
+        email: body.email,
+        roles: [{ role: Role.Diner }],
+      };
+      await route.fulfill({
+        json: { user, token: "xyz" },
+      });
+    } else {
+      await route.continue();
+    }
+  });
+
+  // Go to register page
+  await page.getByRole("link", { name: "Register" }).click();
+  await expect(
+    page.getByRole("heading", { name: "Welcome to the party" }),
+  ).toBeVisible();
+
+  // Fill form and submit
+  await page.getByPlaceholder("Full name").fill("New User");
+  await page.getByPlaceholder("Email address").fill("nu@jwt.com");
+  await page.getByPlaceholder("Password").fill("secret");
+  await page.getByRole("button", { name: "Register" }).click();
+
+  // Logged in and back on home (user initial in header)
+  await expect(
+    page.getByRole("link", { name: "NU", exact: true }),
+  ).toBeVisible();
+});
