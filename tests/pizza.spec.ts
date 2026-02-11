@@ -327,3 +327,54 @@ test("create franchise", async ({ page }) => {
     page.getByRole("heading", { name: "Mama Ricci's kitchen" }),
   ).toBeVisible();
 });
+
+test("close franchise", async ({ page }) => {
+  await basicInit(page);
+
+  // Mock delete franchise API (DELETE /api/franchise/:id only)
+  await page.route(/\/api\/franchise\/\d+$/, async (route) => {
+    if (route.request().method() === "DELETE") {
+      await route.fulfill({ json: { message: "franchise deleted" } });
+    } else {
+      await route.continue();
+    }
+  });
+
+  // Login as admin
+  await page.getByRole("link", { name: "Login" }).click();
+  await page.getByRole("textbox", { name: "Email address" }).fill("a@jwt.com");
+  await page.getByRole("textbox", { name: "Password" }).fill("a");
+  await page.getByRole("button", { name: "Login" }).click();
+
+  await expect(
+    page.getByRole("link", { name: "AU", exact: true }),
+  ).toBeVisible();
+
+  // Go to admin dashboard
+  await page
+    .getByRole("navigation", { name: "Global" })
+    .getByRole("link", { name: "Admin" })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "Mama Ricci's kitchen" }),
+  ).toBeVisible();
+
+  // Click Close for the topSpot franchise row (no stores, so single row)
+  await page
+    .getByRole("row")
+    .filter({ hasText: "topSpot" })
+    .getByRole("button", { name: "Close" })
+    .click();
+
+  // Confirm on close franchise page
+  await expect(
+    page.getByRole("heading", { name: "Sorry to see you go" }),
+  ).toBeVisible();
+  await expect(page.getByRole("main")).toContainText("topSpot");
+  await page.getByRole("button", { name: "Close" }).click();
+
+  // Back on admin dashboard
+  await expect(
+    page.getByRole("heading", { name: "Mama Ricci's kitchen" }),
+  ).toBeVisible();
+});
