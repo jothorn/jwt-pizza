@@ -121,8 +121,12 @@ async function basicInit(page: Page) {
     await route.fulfill({ json: franchiseRes });
   });
 
-  // Order a pizza.
+  // Order history (GET) and create order (POST)
   await page.route("*/**/api/order", async (route) => {
+    if (route.request().method() === "GET") {
+      await route.fulfill({ json: { orders: [] } });
+      return;
+    }
     const orderReq = route.request().postDataJSON();
     const orderRes = {
       order: { ...orderReq, id: 23 },
@@ -321,9 +325,7 @@ test("create franchise", async ({ page }) => {
 
   // Enter franchise name and franchisee email, then create
   await page.getByPlaceholder("franchise name").fill("New Pie Co");
-  await page
-    .getByPlaceholder("franchisee admin email")
-    .fill("f@jwt.com");
+  await page.getByPlaceholder("franchisee admin email").fill("f@jwt.com");
   await page.getByRole("button", { name: "Create" }).click();
 
   // Back on admin dashboard
@@ -446,4 +448,31 @@ test("logout", async ({ page }) => {
     }),
   ).toBeVisible();
   await expect(page.getByRole("link", { name: "KC" })).not.toBeVisible();
+});
+
+test("diner dashboard", async ({ page }) => {
+  await basicInit(page);
+
+  // Login as diner
+  await page.getByRole("link", { name: "Login" }).click();
+  await page.getByRole("textbox", { name: "Email address" }).fill("d@jwt.com");
+  await page.getByRole("textbox", { name: "Password" }).fill("a");
+  await page.getByRole("button", { name: "Login" }).click();
+
+  await expect(page.getByRole("link", { name: "KC" })).toBeVisible();
+
+  // Go to diner dashboard (user avatar link goes to diner-dashboard)
+  await page.getByRole("link", { name: "KC", exact: true }).click();
+
+  // Dashboard loaded: title, user info, and empty-state message
+  await expect(
+    page.getByRole("heading", { name: "Your pizza kitchen" }),
+  ).toBeVisible();
+  await expect(page.getByRole("main")).toContainText("Kai Chen");
+  await expect(page.getByRole("main")).toContainText("d@jwt.com");
+  await expect(page.getByRole("main")).toContainText("diner");
+  await expect(page.getByRole("main")).toContainText(
+    "How have you lived this long without having a pizza?",
+  );
+  await expect(page.getByRole("link", { name: "Buy one" })).toBeVisible();
 });
