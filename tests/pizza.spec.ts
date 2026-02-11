@@ -19,6 +19,13 @@ async function basicInit(page: Page) {
       password: "a",
       roles: [{ role: Role.Franchisee }],
     },
+    "a@jwt.com": {
+      id: "5",
+      name: "Admin User",
+      email: "a@jwt.com",
+      password: "a",
+      roles: [{ role: Role.Admin }],
+    },
   };
 
   // Authorize login for the given user
@@ -254,4 +261,69 @@ test("close store", async ({ page }) => {
 
   // Back on franchise dashboard
   await expect(page.getByRole("heading", { name: "LotaPizza" })).toBeVisible();
+});
+
+test("create franchise", async ({ page }) => {
+  await basicInit(page);
+
+  // Mock create franchise API (POST /api/franchise only)
+  await page.route("**/api/franchise", async (route) => {
+    const req = route.request();
+    const pathname = new URL(req.url()).pathname;
+    if (req.method() === "POST" && pathname === "/api/franchise") {
+      const body = req.postDataJSON();
+      await route.fulfill({
+        json: {
+          id: 5,
+          name: body.name,
+          admins: [
+            {
+              email: body.admins?.[0]?.email,
+              id: 4,
+              name: "pizza franchisee",
+            },
+          ],
+        },
+      });
+    } else {
+      await route.continue();
+    }
+  });
+
+  // Login as admin
+  await page.getByRole("link", { name: "Login" }).click();
+  await page.getByRole("textbox", { name: "Email address" }).fill("a@jwt.com");
+  await page.getByRole("textbox", { name: "Password" }).fill("a");
+  await page.getByRole("button", { name: "Login" }).click();
+
+  await expect(
+    page.getByRole("link", { name: "AU", exact: true }),
+  ).toBeVisible();
+
+  // Go to admin dashboard (nav link)
+  await page
+    .getByRole("navigation", { name: "Global" })
+    .getByRole("link", { name: "Admin" })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "Mama Ricci's kitchen" }),
+  ).toBeVisible();
+
+  // Open create franchise
+  await page.getByRole("button", { name: "Add Franchise" }).click();
+  await expect(
+    page.getByRole("heading", { name: "Create franchise" }),
+  ).toBeVisible();
+
+  // Enter franchise name and franchisee email, then create
+  await page.getByPlaceholder("franchise name").fill("New Pie Co");
+  await page
+    .getByPlaceholder("franchisee admin email")
+    .fill("f@jwt.com");
+  await page.getByRole("button", { name: "Create" }).click();
+
+  // Back on admin dashboard
+  await expect(
+    page.getByRole("heading", { name: "Mama Ricci's kitchen" }),
+  ).toBeVisible();
 });
