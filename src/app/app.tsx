@@ -66,7 +66,7 @@ export default function App() {
     {
       title: "Diner",
       to: "/diner-dashboard",
-      component: <DinerDashboard user={user} />,
+      component: <DinerDashboard user={user} setUser={setUser} />,
       display: [],
     },
     { title: "Order", to: "/menu", component: <Menu />, display: ["nav"] },
