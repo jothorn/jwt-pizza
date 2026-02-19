@@ -2,6 +2,7 @@ import {
   PizzaService,
   Franchise,
   FranchiseList,
+  UserList,
   Store,
   OrderHistory,
   User,
@@ -126,6 +127,16 @@ class HttpPizzaService implements PizzaService {
   ): Promise<FranchiseList> {
     return this.callEndpoint(
       `/api/franchise?page=${page}&limit=${limit}&name=${nameFilter}`,
+    );
+  }
+
+  async getUsers(
+    page: number = 1,
+    limit: number = 10,
+    nameFilter: string = "*",
+  ): Promise<UserList> {
+    return this.callEndpoint(
+      `/api/user?page=${page}&limit=${limit}&name=${nameFilter}`,
     );
   }
 
