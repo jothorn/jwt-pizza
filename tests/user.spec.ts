@@ -330,8 +330,18 @@ test("deleteUserAsAdmin", async ({ page }) => {
       status: 200,
       json: {
         users: [
-          { id: "1", name: "Test User", email: "test@example.com", roles: [{ role: "diner" }] },
-          { id: "2", name: "Another User", email: "another@example.com", roles: [{ role: "diner" }] },
+          {
+            id: "1",
+            name: "Test User",
+            email: "test@example.com",
+            roles: [{ role: "diner" }],
+          },
+          {
+            id: "2",
+            name: "Another User",
+            email: "another@example.com",
+            roles: [{ role: "diner" }],
+          },
         ],
         more: false,
       },
@@ -351,7 +361,9 @@ test("deleteUserAsAdmin", async ({ page }) => {
   ).toBeVisible();
 
   // Find the users table within the users section
-  const usersTable = page.locator('h3:has-text("Users")').locator('xpath=following-sibling::div//table');
+  const usersTable = page
+    .locator('h3:has-text("Users")')
+    .locator("xpath=following-sibling::div//table");
 
   // Check that the users table shows our test users
   await expect(usersTable).toContainText("Test User");
@@ -371,4 +383,115 @@ test("deleteUserAsAdmin", async ({ page }) => {
 
   // Click the delete button (this should work without errors)
   await firstDeleteButton.click();
+});
+
+test("adminUserList", async ({ page }) => {
+  const email = `admin${Math.floor(Math.random() * 10000)}@jwt.com`;
+  const password = "admin";
+
+  const userStore = {
+    value: {
+      id: "a1",
+      name: "pizza admin",
+      email,
+      roles: [{ role: "admin" }],
+    },
+  };
+  let authToken = "mock-token-admin";
+
+  setupMockBackend(page, userStore, authToken, false);
+
+  // Mock users API - page 1 returns many users, page 2 returns fewer
+  page.route("*/**/api/user?page=1*", async (route: any) => {
+    await route.fulfill({
+      status: 200,
+      json: {
+        users: [
+          {
+            id: "1",
+            name: "Alice Johnson",
+            email: "alice@example.com",
+            roles: [{ role: "diner" }],
+          },
+          {
+            id: "2",
+            name: "Bob Smith",
+            email: "bob@example.com",
+            roles: [{ role: "diner" }],
+          },
+        ],
+        more: true,
+      },
+    });
+  });
+
+  page.route("*/**/api/user?page=2*", async (route: any) => {
+    await route.fulfill({
+      status: 200,
+      json: {
+        users: [
+          {
+            id: "3",
+            name: "Charlie Brown",
+            email: "charlie@example.com",
+            roles: [{ role: "diner" }],
+          },
+        ],
+        more: false,
+      },
+    });
+  });
+
+  // Mock filtered results
+  page.route("*/**/api/user*John*", async (route: any) => {
+    await route.fulfill({
+      status: 200,
+      json: {
+        users: [
+          {
+            id: "1",
+            name: "Alice Johnson",
+            email: "alice@example.com",
+            roles: [{ role: "diner" }],
+          },
+        ],
+        more: false,
+      },
+    });
+  });
+
+  await loginUser(page, email, password);
+
+  // Navigate to admin dashboard
+  await page
+    .getByRole("navigation", { name: "Global" })
+    .getByRole("link", { name: "Admin" })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "Mama Ricci's kitchen" }),
+  ).toBeVisible();
+
+  // Test filter functionality
+  const usersSection = page
+    .locator('h3:has-text("Users")')
+    .locator("xpath=following-sibling::div");
+  const filterInput = usersSection.locator('input[placeholder="Filter users"]');
+  await filterInput.fill("John");
+  await usersSection.locator('button:has-text("Submit")').click();
+
+  // Verify filter works
+  const usersTable = usersSection.locator("table");
+  await expect(usersTable).toContainText("Alice Johnson");
+  await expect(usersTable).not.toContainText("Bob Smith");
+
+  // Test pagination
+  await filterInput.fill(""); // Clear filter
+  await usersSection.locator('button:has-text("Submit")').click();
+  await expect(usersTable).toContainText("Alice Johnson");
+  await expect(usersTable).toContainText("Bob Smith");
+
+  // Click next page
+  await usersSection.locator('button:has-text("»")').click();
+  await expect(usersTable).toContainText("Charlie Brown");
+  await expect(usersTable).not.toContainText("Alice Johnson");
 });
