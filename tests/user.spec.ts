@@ -219,3 +219,83 @@ test("changePasswordAndEmail", async ({ page }) => {
   await expect(page.getByRole("main")).toContainText("pizza diner");
   await expect(page.getByRole("main")).toContainText(newEmail);
 });
+
+async function loginUser(page: any, email: string, password: string) {
+  await page.goto("/");
+  await page.getByRole("link", { name: "Login" }).click();
+  await page.getByRole("textbox", { name: "Email address" }).fill(email);
+  await page.getByRole("textbox", { name: "Password" }).fill(password);
+  await page.getByRole("button", { name: "Login" }).click();
+}
+
+test("changeUserInfoAsFranchisee", async ({ page }) => {
+  const email = `franchisee${Math.floor(Math.random() * 10000)}@jwt.com`;
+  const password = "franchisee";
+
+  const userStore = {
+    value: {
+      id: "f1",
+      name: "pizza franchisee",
+      email,
+      roles: [{ role: "franchisee", objectId: "F1" }],
+    },
+  };
+  let authToken = "mock-token-franchisee";
+
+  setupMockBackend(page, userStore, authToken, false);
+
+  await loginUser(page, email, password);
+
+  // Navigate to diner dashboard (avatar shows initials "pf")
+  await page.getByRole("link", { name: "pf" }).click();
+
+  await expect(page.getByRole("main")).toContainText("pizza franchisee");
+  await expect(page.getByRole("main")).toContainText(email);
+  await expect(page.getByRole("main")).toContainText("Franchisee on F1");
+
+  await page.getByRole("button", { name: "Edit" }).click();
+  await expect(page.locator("h3")).toContainText("Edit user");
+  await page.getByRole("textbox").first().fill("pizza franchiseex");
+  await page.getByRole("button", { name: "Update" }).click();
+
+  await page.waitForSelector('[role="dialog"].hidden', { state: "attached" });
+
+  await expect(page.getByRole("main")).toContainText("pizza franchiseex");
+  await expect(page.getByRole("main")).toContainText("Franchisee on F1");
+});
+
+test("changeUserInfoAsAdmin", async ({ page }) => {
+  const email = `admin${Math.floor(Math.random() * 10000)}@jwt.com`;
+  const password = "admin";
+
+  const userStore = {
+    value: {
+      id: "a1",
+      name: "pizza admin",
+      email,
+      roles: [{ role: "admin" }],
+    },
+  };
+  let authToken = "mock-token-admin";
+
+  setupMockBackend(page, userStore, authToken, false);
+
+  await loginUser(page, email, password);
+
+  // Admin has "Admin" nav link; avatar "pa" still goes to diner dashboard
+  await page.getByRole("link", { name: "pa" }).click();
+
+  await expect(page.getByRole("main")).toContainText("pizza admin");
+  await expect(page.getByRole("main")).toContainText(email);
+  await expect(page.getByRole("main")).toContainText("admin");
+
+  await page.getByRole("button", { name: "Edit" }).click();
+  await expect(page.locator("h3")).toContainText("Edit user");
+  await page.getByRole("textbox").first().fill("pizza adminx");
+  await page.getByRole("button", { name: "Update" }).click();
+
+  await page.waitForSelector('[role="dialog"].hidden', { state: "attached" });
+
+  await expect(page.getByRole("main")).toContainText("pizza adminx");
+  await expect(page.getByRole("main")).toContainText("admin");
+});
