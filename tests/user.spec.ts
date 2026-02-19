@@ -66,7 +66,15 @@ function setupMockBackend(
   });
 
   page.route("*/**/api/user/*", async (route: any) => {
-    if (route.request().method() !== "PUT") {
+    const method = route.request().method();
+    if (method === "DELETE") {
+      await route.fulfill({
+        status: 200,
+        json: { message: "user deleted" },
+      });
+      return;
+    }
+    if (method !== "PUT") {
       await route.continue();
       return;
     }
@@ -298,4 +306,76 @@ test("changeUserInfoAsAdmin", async ({ page }) => {
 
   await expect(page.getByRole("main")).toContainText("pizza adminx");
   await expect(page.getByRole("main")).toContainText("admin");
+});
+
+test("deleteUserAsAdmin", async ({ page }) => {
+  const email = `admin${Math.floor(Math.random() * 10000)}@jwt.com`;
+  const password = "admin";
+
+  const userStore = {
+    value: {
+      id: "a1",
+      name: "pizza admin",
+      email,
+      roles: [{ role: "admin" }],
+    },
+  };
+  let authToken = "mock-token-admin";
+  let deleteCalled = false;
+  let deletedUserId = "";
+
+  // Track DELETE calls to user endpoints - set up before setupMockBackend
+  page.on('request', (request) => {
+    if (request.method() === 'DELETE' && request.url().includes('/api/user/')) {
+      const url = request.url();
+      const userIdMatch = url.match(/\/api\/user\/([^\/]+)(?:\?|$)/);
+      if (userIdMatch) {
+        deletedUserId = userIdMatch[1];
+        deleteCalled = true;
+      }
+    }
+  });
+
+  setupMockBackend(page, userStore, authToken, false);
+
+  // Mock the users list API to return some test users
+  page.route("*/**/api/user?page=1&limit=10&name=*", async (route: any) => {
+    await route.fulfill({
+      status: 200,
+      json: {
+        users: [
+          { id: "1", name: "Test User", email: "test@example.com", roles: [{ role: "diner" }] },
+          { id: "2", name: "Another User", email: "another@example.com", roles: [{ role: "diner" }] },
+        ],
+        more: false,
+      },
+    });
+  });
+
+  await loginUser(page, email, password);
+
+  // Navigate to admin dashboard
+  await page
+    .getByRole("navigation", { name: "Global" })
+    .getByRole("link", { name: "Admin" })
+    .click();
+
+  await expect(
+    page.getByRole("heading", { name: "Mama Ricci's kitchen" }),
+  ).toBeVisible();
+
+  // Find the users table within the users section
+  const usersTable = page.locator('h3:has-text("Users")').locator('xpath=following-sibling::div//table');
+
+  // Check that the users table shows our test users and has delete buttons
+  await expect(usersTable).toContainText("Test User");
+  await expect(usersTable).toContainText("test@example.com");
+  await expect(usersTable.locator('th:has-text("Action")')).toBeVisible();
+
+  // Click delete button for the first user (within the users table)
+  await usersTable.locator('button:has-text("Delete")').first().click();
+
+  // Verify the delete API was called
+  expect(deleteCalled).toBe(true);
+  expect(deletedUserId).toBe("1");
 });
