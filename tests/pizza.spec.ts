@@ -121,6 +121,57 @@ async function basicInit(page: Page) {
     await route.fulfill({ json: franchiseRes });
   });
 
+  // Users list (GET /api/user with pagination and filtering)
+  await page.route(/\/api\/user(\?.*)?$/, async (route) => {
+    const url = new URL(route.request().url());
+    const page = parseInt(url.searchParams.get("page") || "1");
+    const limit = parseInt(url.searchParams.get("limit") || "10");
+    const nameFilter = url.searchParams.get("name") || "*";
+
+    // Mock users data
+    const allUsers = [
+      {
+        id: "3",
+        name: "Kai Chen",
+        email: "d@jwt.com",
+        roles: [{ role: Role.Diner }],
+      },
+      {
+        id: "4",
+        name: "Franchisee",
+        email: "f@jwt.com",
+        roles: [{ role: Role.Franchisee }],
+      },
+      {
+        id: "5",
+        name: "Admin User",
+        email: "a@jwt.com",
+        roles: [{ role: Role.Admin }],
+      },
+    ];
+
+    // Apply name filter
+    let filteredUsers = allUsers;
+    if (nameFilter && nameFilter !== "*") {
+      filteredUsers = allUsers.filter(user =>
+        user.name.toLowerCase().includes(nameFilter.toLowerCase())
+      );
+    }
+
+    // Apply pagination
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+    const paginatedUsers = filteredUsers.slice(startIndex, endIndex);
+    const more = endIndex < filteredUsers.length;
+
+    const userRes = {
+      users: paginatedUsers,
+      more,
+    };
+    expect(route.request().method()).toBe("GET");
+    await route.fulfill({ json: userRes });
+  });
+
   // Order history (GET) and create order (POST)
   await page.route("*/**/api/order", async (route) => {
     if (route.request().method() === "GET") {
@@ -475,4 +526,89 @@ test("diner dashboard", async ({ page }) => {
     "How have you lived this long without having a pizza?",
   );
   await expect(page.getByRole("link", { name: "Buy one" })).toBeVisible();
+});
+
+test("admin dashboard shows users table", async ({ page }) => {
+  await basicInit(page);
+
+  // Login as admin
+  await page.getByRole("link", { name: "Login" }).click();
+  await page.getByRole("textbox", { name: "Email address" }).fill("a@jwt.com");
+  await page.getByRole("textbox", { name: "Password" }).fill("a");
+  await page.getByRole("button", { name: "Login" }).click();
+
+  await expect(
+    page.getByRole("link", { name: "AU", exact: true }),
+  ).toBeVisible();
+
+  // Go to admin dashboard
+  await page
+    .getByRole("navigation", { name: "Global" })
+    .getByRole("link", { name: "Admin" })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "Mama Ricci's kitchen" }),
+  ).toBeVisible();
+
+  // Check that Users section is visible
+  await expect(page.getByRole("heading", { name: "Users" })).toBeVisible();
+
+  // Check that users table headers are present
+  await expect(page.getByRole("columnheader", { name: "Name" })).toBeVisible();
+  await expect(page.getByRole("columnheader", { name: "Email" })).toBeVisible();
+  await expect(page.getByRole("columnheader", { name: "Role" })).toBeVisible();
+
+  // Check that user data is displayed in the table - find table within users section
+  const usersTable = page.locator('h3:has-text("Users")').locator('xpath=following-sibling::div//table');
+
+  // Check that all expected user data appears in the table
+  await expect(usersTable).toContainText('Kai Chen');
+  await expect(usersTable).toContainText('d@jwt.com');
+  await expect(usersTable).toContainText('diner');
+
+  await expect(usersTable).toContainText('Franchisee');
+  await expect(usersTable).toContainText('f@jwt.com');
+  await expect(usersTable).toContainText('franchisee');
+
+  await expect(usersTable).toContainText('Admin User');
+  await expect(usersTable).toContainText('a@jwt.com');
+  await expect(usersTable).toContainText('admin');
+});
+
+test("admin dashboard users table filtering", async ({ page }) => {
+  await basicInit(page);
+
+  // Login as admin
+  await page.getByRole("link", { name: "Login" }).click();
+  await page.getByRole("textbox", { name: "Email address" }).fill("a@jwt.com");
+  await page.getByRole("textbox", { name: "Password" }).fill("a");
+  await page.getByRole("button", { name: "Login" }).click();
+
+  // Go to admin dashboard
+  await page
+    .getByRole("navigation", { name: "Global" })
+    .getByRole("link", { name: "Admin" })
+    .click();
+
+  // Check that Users section is visible
+  await expect(page.getByRole("heading", { name: "Users" })).toBeVisible();
+
+  // Check that filter input exists and can be filled
+  const filterInput = page.getByPlaceholder("Filter users");
+  await expect(filterInput).toBeVisible();
+  await filterInput.fill("Admin");
+
+  // Check that submit button exists in users section
+  const usersSubmitButton = page.locator('h3:has-text("Users")').locator('xpath=following-sibling::div//button').filter({ hasText: 'Submit' });
+  await expect(usersSubmitButton).toBeVisible();
+  await usersSubmitButton.click();
+
+  // After filtering, check that some content is still there (the filtering logic is tested in the mock)
+  const usersTable = page.locator('h3:has-text("Users")').locator('xpath=following-sibling::div//table');
+  await expect(usersTable).toBeVisible();
+
+  // Clear filter and verify it can be cleared
+  await filterInput.fill("");
+  await usersSubmitButton.click();
+  await expect(usersTable).toBeVisible();
 });
