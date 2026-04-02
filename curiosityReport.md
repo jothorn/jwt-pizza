@@ -19,7 +19,7 @@ Bun is the hot new runtime, released in 2021 and just barely acquired by Anthrop
 * **Written in**: Zig, a language released in 2016 which isn't even stable yet. Zig is like C but improved with everything we've learned in the 54 years since C was released. The Bun developers probably chose Zig because it allows them to develop fast, even though it's not memory-safe or stable like Rust.
 * **JavaScript engine**: Safari's JavaScriptCore, which has a faster startup time and better memory efficiency than V8. Faster startup is great not just for development but also for CI/CD pipelines. V8 is probably still a bit faster for long-running tasks though.
 * **Built-in tools**: Bun doesn't have as many built-in tools as Deno, but it does still replace npm and jest. And, unlike Deno, it can replace Vite.
-* **Even Faster Install**: Bun uses a binary lockfile which it can parse in parallel, leading to even faster install times compared to Deno.
+* **Even Faster Install**: Bun uses a custom lockfile format which it can parse in parallel, leading to even faster install times compared to Deno.
 * **Secuirty**: Unlike Deno, Bun is meant to be a drop-in replacement for Node, so code is _not_ sandboxed. It does, however, block post-install scripts, preventing attacks like [this one that happened two days ago](https://www.stepsecurity.io/blog/axios-compromised-on-npm-malicious-versions-drop-remote-access-trojan) where a compromised top-10 npm package ran malicious code seconds after the developer ran `npm install`.
 * **Built-in APIs**: They have a bunch of built-in APIs, such as one for bcrypt.
 
