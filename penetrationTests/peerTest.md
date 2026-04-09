@@ -9,12 +9,12 @@ Names: CheonSeok Oh & Jonathan Thornton
 | Item           | Result                                                                       |
 | -------------- | ---------------------------------------------------------------------------- |
 | Date           | April 9, 2025                                                                |
-| Target         | pizza.byucsstudent.click                                                     |
+| Target         | pizza.freevirus.click                                                        |
 | Classification | Security Misconfiguration                                                    |
-| Severity       | 1                                                                            |
-| Description    | SQL injection deleted database. All application data destroyed.              |
+| Severity       | 3                                                                            |
+| Description    | Admin credentials compromised.                                               |
 | Images         | ![Security Misconfiguration](self_intruder.png) <br/> Successful admin login |
-| Corrections    | Sanitize user inputs.                                                        |
+| Corrections    | Remove default admin password                                                |
 
 ### Peer 2 (CheonSeok Oh): Create an attack record for each attack.
 
