@@ -4,7 +4,7 @@ Names: CheonSeok Oh & Jonathan Thornton
 
 ## Self attack
 
-### Peer 1: Create an attack record for each attack.
+### Peer 1 (Jonathan Thornton): Create an attack record for each attack.
 
 | Item           | Result                                                                       |
 | -------------- | ---------------------------------------------------------------------------- |
@@ -16,7 +16,7 @@ Names: CheonSeok Oh & Jonathan Thornton
 | Images         | ![Security Misconfiguration](self_intruder.png) <br/> Successful admin login |
 | Corrections    | Sanitize user inputs.                                                        |
 
-### Peer 2: Create an attack record for each attack.
+### Peer 2 (CheonSeok Oh): Create an attack record for each attack.
 
 ## Peer attack
 
