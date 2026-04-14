@@ -60,7 +60,7 @@ Names: CheonSeok Oh & Jonathan Thornton
 
 | Item           | Result                                                                                        |
 | -------------- | --------------------------------------------------------------------------------------------- |
-| Date           | April 9, 2025                                                                                 |
+| Date           | April 9, 2026                                                                                 |
 | Target         | pizza-service.freevirus.click                                                                 |
 | Classification | Security Misconfiguration                                                                     |
 | Severity       | 3                                                                                             |
@@ -70,17 +70,17 @@ Names: CheonSeok Oh & Jonathan Thornton
 
 | Item           | Result                                                                                                                                                                                                            |
 | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Date           | April 9, 2025                                                                                                                                                                                                     |
+| Date           | April 9, 2026                                                                                                                                                                                                     |
 | Target         | pizza-service.freevirus.click                                                                                                                                                                                     |
 | Classification | Cryptographic Failures                                                                                                                                                                                            |
 | Severity       | 0                                                                                                                                                                                                                 |
 | Description    | Login tokens are excellently cryptographically random. Note that if the same user logs in more than once in the same UTC second, the authentication token will be the same, however, this isn't a security issue. |
-| Images         | ![Security Misconfiguration](selfAttack_JT/JT_self_sequencer.png) <br/> Successful admin login                                                                                                                    |
+| Images         | ![Security Misconfiguration](selfAttack_JT/JT_self_sequencer.png) <br/> Excellent quality of randomness                                                                                                           |
 | Corrections    | Remove default admin password                                                                                                                                                                                     |
 
 | Item           | Result                                                                                                               |
 | -------------- | -------------------------------------------------------------------------------------------------------------------- |
-| Date           | April 14, 2025                                                                                                       |
+| Date           | April 14, 2026                                                                                                       |
 | Target         | pizza-service.freevirus.click                                                                                        |
 | Classification | Broken Access Control                                                                                                |
 | Severity       | 4                                                                                                                    |
@@ -90,7 +90,7 @@ Names: CheonSeok Oh & Jonathan Thornton
 
 | Item           | Result                                                                                                     |
 | -------------- | ---------------------------------------------------------------------------------------------------------- |
-| Date           | April 14, 2025                                                                                             |
+| Date           | April 14, 2026                                                                                             |
 | Target         | pizza-service.freevirus.click                                                                              |
 | Classification | Security Misconfiguration                                                                                  |
 | Severity       | 1                                                                                                          |
@@ -100,7 +100,7 @@ Names: CheonSeok Oh & Jonathan Thornton
 
 | Item           | Result                                                                                                                                                                                                |
 | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Date           | April 14, 2025                                                                                                                                                                                        |
+| Date           | April 14, 2026                                                                                                                                                                                        |
 | Target         | pizza-service.freevirus.click                                                                                                                                                                         |
 | Classification | Injection                                                                                                                                                                                             |
 | Severity       | 4                                                                                                                                                                                                     |
@@ -166,7 +166,7 @@ Names: CheonSeok Oh & Jonathan Thornton
 
 | Item           | Result                                                                                              |
 | -------------- | --------------------------------------------------------------------------------------------------- |
-| Date           | April 9, 2025                                                                                       |
+| Date           | April 9, 2026                                                                                       |
 | Target         | pizza.cs329-jwt-pizza.click                                                                         |
 | Classification | Security Misconfiguration                                                                           |
 | Severity       | 3                                                                                                   |
@@ -176,7 +176,7 @@ Names: CheonSeok Oh & Jonathan Thornton
 
 | Item           | Result                                                                                                               |
 | -------------- | -------------------------------------------------------------------------------------------------------------------- |
-| Date           | April 14, 2025                                                                                                       |
+| Date           | April 14, 2026                                                                                                       |
 | Target         | pizza-service.cs329-jwt-pizza.click                                                                                  |
 | Classification | Broken Access Control                                                                                                |
 | Severity       | 4                                                                                                                    |
@@ -186,7 +186,7 @@ Names: CheonSeok Oh & Jonathan Thornton
 
 | Item           | Result                                                                                                                             |
 | -------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| Date           | April 14, 2025                                                                                                                     |
+| Date           | April 14, 2026                                                                                                                     |
 | Target         | pizza-service.cs329-jwt-pizza.click                                                                                                |
 | Classification | Security Misconfiguration                                                                                                          |
 | Severity       | 1                                                                                                                                  |
@@ -196,7 +196,7 @@ Names: CheonSeok Oh & Jonathan Thornton
 
 | Item           | Result                                                                                                               |
 | -------------- | -------------------------------------------------------------------------------------------------------------------- |
-| Date           | April 14, 2025                                                                                                       |
+| Date           | April 14, 2026                                                                                                       |
 | Target         | pizza-service.cs329-jwt-pizza.click                                                                                  |
 | Classification | Security Misconfiguration                                                                                            |
 | Severity       | 1                                                                                                                    |
@@ -206,7 +206,7 @@ Names: CheonSeok Oh & Jonathan Thornton
 
 | Item           | Result                                                                                                                                                                                                      |
 | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Date           | April 14, 2025                                                                                                                                                                                              |
+| Date           | April 14, 2026                                                                                                                                                                                              |
 | Target         | pizza-service.cs329-jwt-pizza.click                                                                                                                                                                         |
 | Classification | Injection                                                                                                                                                                                                   |
 | Severity       | 4                                                                                                                                                                                                           |
