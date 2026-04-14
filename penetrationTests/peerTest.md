@@ -98,15 +98,15 @@ Names: CheonSeok Oh & Jonathan Thornton
 | Images         | ![/api/docs JSON response](selfAttack_JT/JT_self_config.png) <br/> /api/docs exposes backend configuration |
 | Corrections    | Remove internal config from public docs                                                                    |
 
-| Item           | Result                                                                                                                                                                                                      |
-| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Date           | April 14, 2025                                                                                                                                                                                              |
-| Target         | pizza-service.freevirus.click                                                                                                                                                                               |
-| Classification | Injection                                                                                                                                                                                                   |
-| Severity       | 4                                                                                                                                                                                                           |
-| Description    | PUT /api/user/:id executes arbitrary input on the database. `{"password":"newPassword","name":"pwned' -- "}` changes everybody's password and name becaues the `WHERE` clause gets commented out with `--`. |
-| Images         | ![pwned user page](selfAttack_JT/JT_self_password.png) <br/> name changed to "pwned"                                                                                                                        |
-| Corrections    | Sanatize SQL parameters.                                                                                                                                                                                    |
+| Item           | Result                                                                                                                                                                                                |
+| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Date           | April 14, 2025                                                                                                                                                                                        |
+| Target         | pizza-service.freevirus.click                                                                                                                                                                         |
+| Classification | Injection                                                                                                                                                                                             |
+| Severity       | 4                                                                                                                                                                                                     |
+| Description    | PUT /api/user/:id executes arbitrary input on the database. `{"password":"pwned","name":"pwned' -- "}` changes everybody's password and name becaues the `WHERE` clause gets commented out with `--`. |
+| Images         | ![pwned user page](selfAttack_JT/JT_self_password.png) <br/> name and password changed to "pwned"                                                                                                     |
+| Corrections    | Sanatize SQL parameters.                                                                                                                                                                              |
 
 ## Peer attack
 
@@ -191,18 +191,18 @@ Names: CheonSeok Oh & Jonathan Thornton
 | Classification | Security Misconfiguration                                                                                                          |
 | Severity       | 1                                                                                                                                  |
 | Description    | /api/franchise leaks franchise ids, user ids, and emails, enabling previously shown attacks on credentials and franchise deletion. |
-| Images         | ![/api/docs JSON response](peerAttack_JT_CO/JT_CO_peer_config.png) <br/> Exposed franchise ids, user ids, and emails               |
+| Images         | ![/api/franchise JSON response](peerAttack_JT_CO/JT_CO_peer_config.png) <br/> Exposed franchise ids, user ids, and emails          |
 | Corrections    | Remove extra data from payload (only franchise name and maybe id is needed by the client)                                          |
 
-| Item           | Result                                                                                                           |
-| -------------- | ---------------------------------------------------------------------------------------------------------------- |
-| Date           | April 14, 2025                                                                                                   |
-| Target         | pizza-service.cs329-jwt-pizza.click                                                                              |
-| Classification | Security Misconfiguration                                                                                        |
-| Severity       | 1                                                                                                                |
-| Description    | /api/docs leaks internal factory and database URLs, which could aid further attacks                              |
-| Images         | ![/api/docs JSON response](peerAttack_JT_CO/JT_CO_peer_config.png) <br/> /api/docs exposes backend configuration |
-| Corrections    | Remove internal config from public docs                                                                          |
+| Item           | Result                                                                                                               |
+| -------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Date           | April 14, 2025                                                                                                       |
+| Target         | pizza-service.cs329-jwt-pizza.click                                                                                  |
+| Classification | Security Misconfiguration                                                                                            |
+| Severity       | 1                                                                                                                    |
+| Description    | /api/docs leaks internal configuration, which could aid further attacks                                              |
+| Images         | ![/api/docs JSON response](peerAttack_JT_CO/JT_CO_peer_config.png) <br/> /api/docs exposes factory and database urls |
+| Corrections    | Remove internal config from public docs                                                                              |
 
 | Item           | Result                                                                                                                                                                                                      |
 | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
